@@ -1,0 +1,20 @@
+name: 'Patch ReKernel for Kernel.'
+
+runs:
+  using: 'composite'
+  steps:
+      - name: Patch ReKernel
+        if: env.REKERNEL_ENABLE == 'true'
+        shell: bash
+        run: |
+          cd $GITHUB_WORKSPACE/device_kernel/
+          cp /tmp/Patches/Rekernel/rekernel_patches.sh ./
+          bash rekernel_patches.sh
+
+          mkdir -p drivers/rekernel
+          cp /tmp/Patches/Rekernel/rekernel_extra.patch ./
+          patch -p1 < rekernel_extra.patch || true
+
+          echo "CONFIG_REKERNEL=y" >> ./arch/${{ env.KERNEL_ARCH }}/configs/${{ env.DEFCONFIG_NAME }}
+
+          echo "[+] Patched Re:Kernel for your kernel successfully."
